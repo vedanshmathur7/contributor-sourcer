@@ -18,6 +18,7 @@ class Criteria(BaseModel):
     min_merged_prs: int = Field(default=2, ge=1, le=20)
     max_candidates: int = Field(default=15, ge=1, le=50)
     location: str | None = None
+    search: bool = Field(default=True, description="False = only vet seed_users, skip discovery")
 
     @field_validator("languages", "keywords", "seed_repos", "seed_users")
     @classmethod

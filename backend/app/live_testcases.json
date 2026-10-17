@@ -1,0 +1,7 @@
+{
+  "_comment": "Real public GitHub accounts used for Live-mode TC runs. Edit from the /tests page or here. Results are recorded honestly: live data can change.",
+  "TC1": {"login": null, "languages": ["Rust"], "window_days": 180},
+  "TC2": {"login": null, "languages": ["Rust"], "window_days": 180},
+  "TC3": {"login": null, "languages": ["Rust"], "window_days": 180},
+  "TC4": {"login": null, "languages": ["Rust"], "window_days": 180}
+}

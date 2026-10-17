@@ -153,9 +153,12 @@ class Agent:
         target = min(c.max_candidates, 5)
 
         # Pass 1 discovery
-        pool = await self._discover(c, seed_repos=c.seed_repos, seed_users=c.seed_users)
+        pool = await self._discover(c, seed_repos=c.seed_repos if c.search else [], seed_users=c.seed_users,
+                                    search=c.search)
         seeded.extend(c.seed_repos)
         await self._enrich_and_classify(pool, pass_no=1)
+        if not c.search:
+            return  # vet-only: judge exactly the profiles the recruiter listed
 
         for pass_no in range(2, MAX_PASSES + 1):
             shortlisted = sum(1 for d in self.decisions.values() if d.classification == Classification.SHORTLISTED)
