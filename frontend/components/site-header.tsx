@@ -23,9 +23,34 @@ export function SiteHeader() {
   const path = usePathname();
   const [meta, setMeta] = useState<Meta | null>(null);
   const [offline, setOffline] = useState(false);
+  const [waking, setWaking] = useState(false);
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    api.meta().then(setMeta).catch(() => setOffline(true));
+    // Free-tier hosting sleeps when idle: keep retrying for ~1 minute while it wakes up.
+    let cancelled = false;
+    (async () => {
+      for (let attempt = 0; attempt < 12 && !cancelled; attempt++) {
+        try {
+          const m = await api.meta();
+          if (!cancelled) {
+            setMeta(m);
+            setWaking(false);
+            setOffline(false);
+          }
+          return;
+        } catch {
+          if (!cancelled) setWaking(true);
+          await new Promise((r) => setTimeout(r, 5000));
+        }
+      }
+      if (!cancelled) {
+        setWaking(false);
+        setOffline(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
   useEffect(() => setOpen(false), [path]);
 
@@ -54,6 +79,8 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2">
           {offline ? (
             <Badge tone="danger">API offline</Badge>
+          ) : waking ? (
+            <Badge tone="warning"><span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-warning" /> Waking API…</Badge>
           ) : meta ? (
             <Tooltip
               content={

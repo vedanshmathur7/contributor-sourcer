@@ -1,0 +1,17 @@
+name: Keep demo awake
+
+# Render's free tier sleeps after ~15 idle minutes. During the hackathon (18–31 Oct 2026),
+# ping both services every 14 minutes from 08:00 to 23:59 IST so judges never hit a cold start.
+on:
+  schedule:
+    - cron: "*/14 2-18 18-31 10 *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - run: |
+          curl -fsS -m 90 https://contributor-sourcer-api.onrender.com/api/health || true
+          curl -fsS -m 90 -o /dev/null https://contributor-sourcer.onrender.com || true

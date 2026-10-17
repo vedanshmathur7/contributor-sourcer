@@ -4,6 +4,10 @@
 
 Built for the **Ziro Agentic AI Hackathon 2026** (Developer & Enterprise AI track).
 
+**Live demo:** https://contributor-sourcer.onrender.com · API https://contributor-sourcer-api.onrender.com/docs · [Official test cases](https://contributor-sourcer.onrender.com/tests)
+
+> These run on the free hosting tier. If the site has been idle, the first load can take about 30 seconds while the API wakes up. The header shows *"Waking API…"* and retries automatically.
+
 ---
 
 ## The problem
@@ -144,12 +148,23 @@ CI (GitHub Actions) runs lint and the full suite on every push.
 
 ## Deploy
 
-1. **Database:** create a Supabase project and copy the *Transaction pooler* connection string into `DATABASE_URL`. Tables are created on boot.
-2. **Backend (Render):** create a *New → Blueprint* from this repo, which uses `render.yaml`. Set `GITHUB_TOKEN`, `LLM_API_KEY`, `DATABASE_URL` and `CORS_ORIGINS` (your Vercel URL). The health check is `/api/health`.
-3. **Frontend (Vercel):** import the repo with the root directory set to `frontend`, and set `NEXT_PUBLIC_API_URL` to the Render URL.
-4. Smoke test: open `/tests`, click **Run TC1–TC4** in Fixture mode, and expect 4 of 4 to pass.
+The live demo is deployed as **one Render Blueprint** (`render.yaml`) that creates two free web services:
 
-The free Render tier sleeps after inactivity. The UI shows *"API may be waking up"* and retries. For a demo, open the site a minute early or add an uptime ping to `/api/health`.
+| Service | Runtime | URL |
+|---|---|---|
+| `contributor-sourcer-api` | Docker (`backend/Dockerfile`), with `/api/health` as the health check | https://contributor-sourcer-api.onrender.com |
+| `contributor-sourcer` | Node, running `next build` then `next start` | https://contributor-sourcer.onrender.com |
+
+To redeploy your own copy, go to Render → **New → Blueprint**, pick this repo, then fill in the secret values:
+- `GITHUB_TOKEN`: a fine-grained, public, read-only token. It enables Live mode.
+- `LLM_API_KEY`: an Anthropic key. It enables the LLM planner, adaptation and summaries.
+- `DATABASE_URL`: the Supabase *Transaction pooler* URL. This gives durable storage; without it, the API uses SQLite inside the container, and that data is reset whenever the service restarts.
+
+Every push to `main` redeploys both services. CI runs lint, typecheck and tests. `.github/workflows/keepalive.yml` pings both services every 14 minutes during the event, so the free tier doesn't sleep.
+
+**Vercel alternative:** the backend also runs serverless (`backend/index.py` and `backend/vercel.json`). On Vercel (`VERCEL=1`, or set `RUN_INLINE=1`), the agent executes inside the SSE request, because serverless kills background tasks. Runs are claimed atomically, so a run never executes twice. Use Postgres with this option.
+
+Smoke test: open `/tests`, click **Run TC1–TC4** in Fixture mode, and expect 4 of 4 to pass. This has been verified on the live deployment.
 
 ## Privacy and safety
 
@@ -167,3 +182,4 @@ The free Render tier sleeps after inactivity. The UI shows *"API may be waking u
 * GraphQL returns the 60 most recent merged PRs per user. Very prolific contributors are judged on that window.
 * The `/repos/{repo}/contributors` endpoint is all-time and capped at 30 per seed repo.
 * Live-mode test-case results depend on real accounts and can change over time. They are recorded as they are.
+* Without `DATABASE_URL`, the hosted demo stores runs in container-local SQLite. Run permalinks survive while the service is up, and are reset by a redeploy or restart.
