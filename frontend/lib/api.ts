@@ -11,7 +11,9 @@ import type {
   TestResult,
 } from "./types";
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const RAW_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// Render's fromService gives a bare host; accept both "host" and "https://host".
+export const API_URL = (/^https?:\/\//.test(RAW_API) ? RAW_API : `https://${RAW_API}`).replace(/\/$/, "");
 
 export class ApiError extends Error {
   status: number;

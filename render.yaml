@@ -19,4 +19,19 @@ services:
       - key: DATABASE_URL
         sync: false
       - key: CORS_ORIGINS
-        sync: false
+        value: http://localhost:3000
+
+  - type: web
+    name: contributor-sourcer
+    runtime: node
+    rootDir: frontend
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm start -- -p $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # Public URL of the API service (verify after the first deploy; Render may add a suffix).
+      - key: NEXT_PUBLIC_API_URL
+        value: https://contributor-sourcer-api.onrender.com
