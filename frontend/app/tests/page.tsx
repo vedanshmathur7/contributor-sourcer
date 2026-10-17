@@ -101,6 +101,7 @@ export default function TestsPage() {
   const [liveInputs, setLiveInputs] = useState<LiveInputs>({});
   const [latest, setLatest] = useState<Latest | null>(null);
   const [mode, setMode] = useState<Mode>("fixture");
+  const [pending, setPending] = useState<Mode | null>(null);
 
   const refresh = useCallback(() => api.testLatest().then(setLatest).catch(() => {}), []);
   useEffect(() => {
@@ -119,12 +120,16 @@ export default function TestsPage() {
   }, [anyRunning, refresh]);
 
   async function run(m: Mode) {
+    setPending(m);
+    toast(`Running TC1–TC4 in ${m} mode…`);
     try {
       await api.runTests(m, m === "live" ? liveInputs : undefined);
-      toast(`Running TC1–TC4 in ${m} mode…`);
-      setTimeout(refresh, 300);
+      await refresh();
     } catch (e) {
       toast.error((e as Error).message);
+    } finally {
+      setPending(null);
+      setTimeout(refresh, 300);
     }
   }
 
@@ -152,8 +157,8 @@ export default function TestsPage() {
                   <span className="text-muted-foreground"> / {latest[mode].results.length} passed</span>
                 </span>
               )}
-              <Button onClick={() => run(mode)} disabled={latest[mode].running || (mode === "live" && !liveAvail)}>
-                {latest[mode].running ? <Loader2 className="animate-spin" /> : <Play />}
+              <Button onClick={() => run(mode)} disabled={latest[mode].running || pending === mode || (mode === "live" && !liveAvail)}>
+                {latest[mode].running || pending === mode ? <Loader2 className="animate-spin" /> : <Play />}
                 {latest[mode].results.length ? "Re-run" : "Run"} TC1–TC4
               </Button>
             </div>
@@ -200,7 +205,7 @@ export default function TestsPage() {
               {!defs || !latest
                 ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-72 rounded-xl" />)
                 : defs.map((d) => (
-                    <CaseCard key={d.id} def={d} running={latest[m].running} result={latest[m].results.find((r) => r.tc_id === d.id)} />
+                    <CaseCard key={d.id} def={d} running={latest[m].running || pending === m} result={latest[m].results.find((r) => r.tc_id === d.id)} />
                   ))}
             </div>
           </TabsContent>

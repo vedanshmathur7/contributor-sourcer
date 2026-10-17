@@ -424,6 +424,19 @@ def _counts(decisions: dict[str, Decision]) -> dict[str, int]:
     return out
 
 
+async def claim_inline(run_id: str) -> bool:
+    """Atomically claim a RUNNING run that nobody has started yet (serverless inline mode)."""
+    from sqlalchemy import update
+
+    async with SessionLocal() as db:
+        res = await db.execute(
+            update(Run).where(Run.id == run_id, Run.status == "RUNNING", Run.started_at.is_(None))
+            .values(started_at=datetime.now(UTC))
+        )
+        await db.commit()
+        return res.rowcount == 1
+
+
 def start_run(run_id: str) -> asyncio.Task:
     task = asyncio.create_task(Agent(run_id).execute())
     _tasks.add(task)

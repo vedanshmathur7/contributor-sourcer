@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.config import get_settings
-from app.db import SessionLocal, init_db
+from app.db import SessionLocal, ensure_db, init_db
 from app.routers import review, runs, testcases
 
 
@@ -34,6 +34,12 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def _lazy_db(request: Request, call_next):
+    await ensure_db()
+    return await call_next(request)
+
+
 app.include_router(runs.router)
 app.include_router(review.router)
 app.include_router(testcases.router)
@@ -58,4 +64,5 @@ async def meta():
         "llm_provider": settings.llm_provider if settings.llm_enabled else "none",
         "llm_model": settings.llm_model if settings.llm_enabled else None,
         "commit": settings.commit_sha,
+        "inline_runs": settings.run_inline,
     }

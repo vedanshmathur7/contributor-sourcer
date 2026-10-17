@@ -43,6 +43,9 @@ async def run(body: RunRequest):
         raise HTTPException(400, "Live mode needs a GITHUB_TOKEN on the server.")
     if tcs.is_running(body.mode):
         raise HTTPException(409, "a test batch is already running in this mode")
+    if get_settings().run_inline:
+        batch = await tcs.run_all(body.mode, body.inputs)  # serverless: finish inside the request
+        return {"started": True, "mode": body.mode, "batch_id": batch, "completed": True}
     tcs.start_batch(body.mode, body.inputs)
     return {"started": True, "mode": body.mode}
 

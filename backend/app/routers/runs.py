@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
 from app import events
-from app.agent import start_run
+from app.agent import claim_inline, start_run
 from app.config import get_settings
 from app.crud import audit, load_run
 from app.db import SessionLocal, get_session
@@ -111,8 +111,10 @@ async def start(run_id: str, db: AsyncSession = Depends(get_session)):
         raise HTTPException(409, f"run is {run.status}")
     _check_mode(run.mode)
     run.status = "RUNNING"
+    run.started_at = None
     await db.commit()
-    start_run(run_id)
+    if not get_settings().run_inline:
+        start_run(run_id)
     return run_summary(run)
 
 
@@ -163,6 +165,8 @@ async def run_events(run_id: str):
                 if run.status in TERMINAL or run.status == "PLANNED":
                     yield {"event": "done", "data": json.dumps({"status": run.status})}
                     return
+            if get_settings().run_inline and await claim_inline(run_id):
+                start_run(run_id)  # executes within this streaming request's lifetime
             while True:
                 try:
                     ev = await asyncio.wait_for(q.get(), timeout=15)

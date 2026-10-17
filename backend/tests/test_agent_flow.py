@@ -102,3 +102,23 @@ async def test_sse_snapshot_for_planned_run(client):
         async for chunk in s.aiter_text():
             body += chunk
     assert "event: snapshot" in body and "event: done" in body
+
+
+async def test_inline_mode_runs_agent_inside_sse_request(client, monkeypatch):
+    """Serverless mode: /start does not spawn a task; the SSE request claims and executes the run."""
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "run_inline", True)
+    rid = (await client.post("/api/runs/plan", json={"query": "Rust async, last 6 months", "mode": "fixture"})).json()["id"]
+    await client.post(f"/api/runs/{rid}/start")
+    assert (await client.get(f"/api/runs/{rid}")).json()["status"] == "RUNNING"
+    body = ""
+    async with client.stream("GET", f"/api/runs/{rid}/events") as s:
+        async for chunk in s.aiter_text():
+            body += chunk
+    assert "event: step" in body and "event: done" in body
+    assert (await client.get(f"/api/runs/{rid}")).json()["status"] == "PENDING_APPROVAL"
+    # A second stream must not re-run it
+    async with client.stream("GET", f"/api/runs/{rid}/events") as s:
+        second = "".join([c async for c in s.aiter_text()])
+    assert "event: step" not in second

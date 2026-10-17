@@ -23,11 +23,22 @@ engine = _make_engine()
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
+_ready = False
+
+
 async def init_db() -> None:
+    global _ready
     from app import models  # noqa: F401  (registers tables)
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    _ready = True
+
+
+async def ensure_db() -> None:
+    """Idempotent lazy init — serverless runtimes may not run ASGI lifespan events."""
+    if not _ready:
+        await init_db()
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

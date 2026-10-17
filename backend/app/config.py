@@ -1,3 +1,5 @@
+import os
+import tempfile
 from functools import lru_cache
 from pathlib import Path
 
@@ -31,6 +33,9 @@ class Settings(BaseSettings):
     http_timeout_s: float = 20.0
     # Fixture mode simulates GitHub latency so the live trace is watchable in demos (0 in tests).
     fixture_latency_ms: int = 140
+    # Serverless hosts (Vercel) kill background tasks once a response returns, so the agent runs inside the
+    # SSE request instead. Auto-enabled on Vercel; can be forced with RUN_INLINE=1.
+    run_inline: bool = bool(os.environ.get("VERCEL"))
 
     @property
     def live_available(self) -> bool:
@@ -48,7 +53,7 @@ class Settings(BaseSettings):
     def async_database_url(self) -> str:
         url = self.database_url.strip()
         if not url:
-            data_dir = BACKEND_DIR / "data"
+            data_dir = Path(tempfile.gettempdir()) if os.environ.get("VERCEL") else BACKEND_DIR / "data"
             data_dir.mkdir(exist_ok=True)
             return f"sqlite+aiosqlite:///{data_dir / 'sourcer.db'}"
         if url.startswith("postgres://"):
