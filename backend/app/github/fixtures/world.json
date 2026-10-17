@@ -1,0 +1,143 @@
+{
+  "_comment": "Synthetic, GitHub-shaped fixture world. Every person, repo and PR here is fictional. Dates are relative (days_ago) so runs stay reproducible on any day.",
+  "repos": {
+    "asyncforge/reactor":      {"stars": 14820, "primary_language": "Rust", "topics": ["async", "runtime", "networking"]},
+    "meshwire/quic-rs":        {"stars": 3150,  "primary_language": "Rust", "topics": ["quic", "networking", "async"]},
+    "ferrous-db/tidekv":       {"stars": 6240,  "primary_language": "Rust", "topics": ["database", "storage", "async"]},
+    "asyncforge/reactor-py":   {"stars": 820,   "primary_language": "Python", "topics": ["python", "bindings"]},
+    "dataplane/pyflow":        {"stars": 9100,  "primary_language": "Python", "topics": ["data", "pipelines"]},
+    "ghostwire/fastpath":      {"stars": 410,   "primary_language": "Rust", "topics": ["networking", "async"]},
+    "nimbus-ui/kit":           {"stars": 21300, "primary_language": "TypeScript", "topics": ["react", "ui", "components"]},
+    "nimbus-ui/forms":         {"stars": 2900,  "primary_language": "TypeScript", "topics": ["react", "forms"]}
+  },
+  "contributors": {
+    "asyncforge/reactor": ["synth-kernel-hacker", "tc3-stale-dev", "tc1-active-rustacean", "synth-newcomer", "reactor-ci-bot[bot]"],
+    "meshwire/quic-rs": ["tc4-no-email", "synth-kernel-hacker", "tc1-active-rustacean"],
+    "nimbus-ui/kit": ["synth-frontend-lead"]
+  },
+  "rest_overrides": {
+    "ghostwire/fastpath#14": {"status": 404, "reason": "Repository no longer exists (deleted after the search index was built)"}
+  },
+  "users": [
+    {
+      "login": "tc1-active-rustacean", "name": "Asha Verma (synthetic)", "location": "Bengaluru, India",
+      "company": "@meshwire", "bio": "Async Rust, networking, QUIC. Synthetic TC1 persona.",
+      "email": "asha.verma@example.com", "blog": "https://example.com/asha", "followers": 412,
+      "repos": [
+        {"name_with_owner": "tc1-active-rustacean/dotfiles", "primary_language": "Shell", "pushed_days_ago": 40}
+      ],
+      "prs": [
+        {"number": 4821, "repo": "asyncforge/reactor", "title": "io: avoid spurious wakeups in the epoll driver under contention", "merged_days_ago": 6, "additions": 184, "deletions": 61},
+        {"number": 4790, "repo": "asyncforge/reactor", "title": "sync: add cancellation-safe Notify::notified_owned", "merged_days_ago": 19, "additions": 233, "deletions": 18},
+        {"number": 1312, "repo": "meshwire/quic-rs", "title": "Implement async stream prioritisation for HTTP/3 frames", "merged_days_ago": 27, "additions": 412, "deletions": 95}
+      ]
+    },
+    {
+      "login": "tc2-fork-only", "name": "Rohan Mehta (synthetic)", "location": "Pune, India",
+      "bio": "Tinkering with async runtimes. Synthetic TC2 persona.", "email": "rohan.m@example.com", "followers": 37,
+      "repos": [
+        {"name_with_owner": "tc2-fork-only/reactor", "is_fork": true, "parent": "asyncforge/reactor", "primary_language": "Rust", "pushed_days_ago": 3, "stars": 0},
+        {"name_with_owner": "tc2-fork-only/quic-rs", "is_fork": true, "parent": "meshwire/quic-rs", "primary_language": "Rust", "pushed_days_ago": 22, "stars": 0}
+      ],
+      "prs": [
+        {"number": 3, "repo": "tc2-fork-only/reactor", "title": "Experiment: custom async scheduler (fork only)", "merged_days_ago": 4, "additions": 640, "deletions": 120},
+        {"number": 2, "repo": "tc2-fork-only/reactor", "title": "Rebase on upstream + tweak timer wheel", "merged_days_ago": 12, "additions": 90, "deletions": 44},
+        {"number": 1, "repo": "tc2-fork-only/quic-rs", "title": "Try zero-copy async recv path", "merged_days_ago": 25, "additions": 210, "deletions": 15}
+      ]
+    },
+    {
+      "login": "tc3-stale-dev", "name": "Meera Iyer (synthetic)", "location": "Chennai, India",
+      "bio": "Former reactor maintainer. Synthetic TC3 persona.", "email": "meera.iyer@example.com", "followers": 980,
+      "repos": [
+        {"name_with_owner": "tc3-stale-dev/async-notes", "primary_language": "Rust", "pushed_days_ago": 1110, "stars": 64}
+      ],
+      "prs": [
+        {"number": 2210, "repo": "asyncforge/reactor", "title": "runtime: work-stealing scheduler rewrite", "merged_days_ago": 1104, "additions": 2870, "deletions": 1410},
+        {"number": 2188, "repo": "asyncforge/reactor", "title": "time: hierarchical timer wheel", "merged_days_ago": 1131, "additions": 1290, "deletions": 380},
+        {"number": 2101, "repo": "asyncforge/reactor", "title": "net: async UDP socket support", "merged_days_ago": 1190, "additions": 760, "deletions": 90},
+        {"number": 640, "repo": "meshwire/quic-rs", "title": "Initial async congestion control", "merged_days_ago": 1205, "additions": 980, "deletions": 120}
+      ]
+    },
+    {
+      "login": "tc4-no-email", "name": "Karan Shah (synthetic)", "location": "Hyderabad, India",
+      "bio": "QUIC + async Rust. Synthetic TC4 persona.", "email": null, "followers": 158,
+      "repos": [],
+      "prs": [
+        {"number": 1340, "repo": "meshwire/quic-rs", "title": "Fix async flow-control window update race", "merged_days_ago": 9, "additions": 121, "deletions": 34},
+        {"number": 1298, "repo": "meshwire/quic-rs", "title": "Add async connection migration tests", "merged_days_ago": 33, "additions": 305, "deletions": 12},
+        {"number": 910, "repo": "ferrous-db/tidekv", "title": "async compaction: bound memory during merges", "merged_days_ago": 58, "additions": 266, "deletions": 140}
+      ]
+    },
+    {
+      "login": "synth-kernel-hacker", "name": "Dev Patel (synthetic)", "location": "Remote",
+      "company": "@ferrous-db", "bio": "Runtime internals. Synthetic persona.", "email": "dev.patel@example.com", "followers": 2210,
+      "repos": [
+        {"name_with_owner": "synth-kernel-hacker/io-uring-bench", "primary_language": "Rust", "pushed_days_ago": 15, "stars": 340}
+      ],
+      "prs": [
+        {"number": 4830, "repo": "asyncforge/reactor", "title": "runtime: io_uring backed async file ops", "merged_days_ago": 3, "additions": 1520, "deletions": 210},
+        {"number": 4802, "repo": "asyncforge/reactor", "title": "task: reduce task header size by 16 bytes", "merged_days_ago": 14, "additions": 96, "deletions": 140},
+        {"number": 4744, "repo": "asyncforge/reactor", "title": "sync: lock-free mpsc fast path", "merged_days_ago": 41, "additions": 388, "deletions": 102},
+        {"number": 1302, "repo": "meshwire/quic-rs", "title": "async GSO batching for send path", "merged_days_ago": 30, "additions": 277, "deletions": 51},
+        {"number": 925, "repo": "ferrous-db/tidekv", "title": "async WAL fsync batching", "merged_days_ago": 72, "additions": 450, "deletions": 88},
+        {"number": 12, "repo": "synth-kernel-hacker/io-uring-bench", "title": "bench: add async read benchmarks", "merged_days_ago": 15, "additions": 300, "deletions": 0}
+      ]
+    },
+    {
+      "login": "synth-newcomer", "name": "Priya Nair (synthetic)", "location": "Kochi, India",
+      "bio": "Learning Rust. Synthetic persona.", "email": null, "followers": 12,
+      "repos": [],
+      "prs": [
+        {"number": 4815, "repo": "asyncforge/reactor", "title": "docs: clarify async select! cancellation", "merged_days_ago": 10, "additions": 22, "deletions": 5}
+      ]
+    },
+    {
+      "login": "synth-solo-builder", "name": "Arjun Rao (synthetic)", "location": "Delhi, India",
+      "bio": "Builds things alone. Synthetic persona.", "email": "arjun.rao@example.com", "followers": 88,
+      "repos": [
+        {"name_with_owner": "synth-solo-builder/async-crawler", "primary_language": "Rust", "pushed_days_ago": 2, "stars": 51}
+      ],
+      "prs": [
+        {"number": 41, "repo": "synth-solo-builder/async-crawler", "title": "async politeness scheduler", "merged_days_ago": 2, "additions": 300, "deletions": 40},
+        {"number": 40, "repo": "synth-solo-builder/async-crawler", "title": "retry with jitter", "merged_days_ago": 8, "additions": 120, "deletions": 10},
+        {"number": 39, "repo": "synth-solo-builder/async-crawler", "title": "robots.txt support", "merged_days_ago": 16, "additions": 210, "deletions": 22}
+      ]
+    },
+    {
+      "login": "synth-pythonista", "name": "Neha Kulkarni (synthetic)", "location": "Mumbai, India",
+      "bio": "Python data tooling. Synthetic persona.", "email": "neha.k@example.com", "followers": 640,
+      "repos": [],
+      "prs": [
+        {"number": 77, "repo": "asyncforge/reactor-py", "title": "Add async context manager for Reactor handle", "merged_days_ago": 11, "additions": 140, "deletions": 20},
+        {"number": 3120, "repo": "dataplane/pyflow", "title": "async executor for pipeline stages", "merged_days_ago": 21, "additions": 520, "deletions": 70}
+      ]
+    },
+    {
+      "login": "synth-vanishing-repo", "name": "Sam Thomas (synthetic)", "location": "Goa, India",
+      "bio": "Networking. Synthetic persona whose evidence fails re-verification.", "email": null, "followers": 73,
+      "repos": [],
+      "prs": [
+        {"number": 14, "repo": "ghostwire/fastpath", "title": "async zero-copy packet forwarding", "merged_days_ago": 18, "additions": 600, "deletions": 90},
+        {"number": 4799, "repo": "asyncforge/reactor", "title": "net: expose async SO_REUSEPORT option", "merged_days_ago": 24, "additions": 75, "deletions": 9}
+      ]
+    },
+    {
+      "login": "reactor-ci-bot[bot]", "type": "Bot",
+      "repos": [],
+      "prs": [
+        {"number": 4825, "repo": "asyncforge/reactor", "title": "chore(deps): bump async-trait to 0.1.83", "merged_days_ago": 5, "additions": 4, "deletions": 4},
+        {"number": 4818, "repo": "asyncforge/reactor", "title": "chore(deps): bump mio to 1.0.2", "merged_days_ago": 9, "additions": 6, "deletions": 6}
+      ]
+    },
+    {
+      "login": "synth-frontend-lead", "name": "Ishaan Gupta (synthetic)", "location": "Bengaluru, India",
+      "bio": "React + design systems. Synthetic persona.", "email": "ishaan.g@example.com", "followers": 1500,
+      "repos": [],
+      "prs": [
+        {"number": 8801, "repo": "nimbus-ui/kit", "title": "Combobox: async option loading with suspense", "merged_days_ago": 7, "additions": 540, "deletions": 120},
+        {"number": 8760, "repo": "nimbus-ui/kit", "title": "Dialog: focus trap fixes", "merged_days_ago": 20, "additions": 88, "deletions": 31},
+        {"number": 402, "repo": "nimbus-ui/forms", "title": "Field arrays with async validation", "merged_days_ago": 35, "additions": 310, "deletions": 44}
+      ]
+    }
+  ]
+}
