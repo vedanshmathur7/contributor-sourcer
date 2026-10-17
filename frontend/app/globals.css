@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+    --primary: 252 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 42%;
+    --accent: 252 90% 96%;
+    --accent-foreground: 252 60% 40%;
+    --border: 240 6% 90%;
+    --input: 240 6% 88%;
+    --ring: 252 83% 58%;
+    --success: 152 62% 38%;
+    --warning: 35 92% 45%;
+    --danger: 0 72% 52%;
+    --radius: 0.7rem;
+  }
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 96%;
+    --card: 240 8% 6.5%;
+    --card-foreground: 0 0% 96%;
+    --popover: 240 8% 7%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 252 90% 68%;
+    --primary-foreground: 240 10% 4%;
+    --secondary: 240 5% 12%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 240 5% 11%;
+    --muted-foreground: 240 5% 62%;
+    --accent: 252 40% 16%;
+    --accent-foreground: 252 95% 82%;
+    --border: 240 5% 15%;
+    --input: 240 5% 18%;
+    --ring: 252 90% 68%;
+    --success: 152 60% 50%;
+    --warning: 38 92% 58%;
+    --danger: 0 80% 64%;
+  }
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-image: linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+  .glow {
+    background: radial-gradient(600px circle at 50% -10%, hsl(var(--primary) / 0.18), transparent 60%);
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}

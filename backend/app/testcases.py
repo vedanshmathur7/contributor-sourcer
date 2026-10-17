@@ -59,7 +59,7 @@ def judge(tc: TestCase, cand: Candidate | None) -> tuple[bool | None, str, str]:
         return None, "No candidate record produced", "The profile could not be loaded, so the case is inconclusive."
     q = [e for e in cand.evidence if e.qualifies]
     verified = [e for e in q if e.verified]
-    head = f"{cand.classification} ({cand.reason_code})"
+    head = cand.classification if cand.reason_code == cand.classification else f"{cand.classification} ({cand.reason_code})"
     if tc.id == "TC1":
         ok = cand.classification == "SHORTLISTED" and bool(q) and all("/pull/" in e.url for e in q)
         actual = f"{head} — {len(q)} qualifying PR link(s), {len(verified)}/{len(q)} re-verified"
