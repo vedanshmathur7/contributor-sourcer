@@ -7,6 +7,7 @@ os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_tmp}/test.db"
 os.environ["GITHUB_TOKEN"] = ""
 os.environ["LLM_PROVIDER"] = "none"
 os.environ["LLM_API_KEY"] = ""
+os.environ["FIXTURE_LATENCY_MS"] = "0"
 
 import pytest  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402

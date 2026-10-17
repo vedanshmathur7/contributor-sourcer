@@ -6,6 +6,7 @@ from sqlalchemy import text
 
 from app.config import get_settings
 from app.db import SessionLocal, init_db
+from app.routers import runs
 
 
 @asynccontextmanager
@@ -31,6 +32,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(runs.router)
 
 
 @app.get("/api/health")

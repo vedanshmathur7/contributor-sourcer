@@ -4,11 +4,14 @@ It mirrors the live client's semantics — search only sees merged PRs inside th
 are all-time, REST reads come from a separate path — so the same agent code runs on both.
 """
 
+import asyncio
 import json
+import random
 from datetime import UTC, datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 
+from app.config import get_settings
 from app.github.base import NotFound
 from app.schemas import CandidateData, Criteria, Profile, PullRequest, RepoInfo, SearchHit, SearchResult
 
@@ -35,6 +38,12 @@ class FixtureGitHubClient:
 
     async def aclose(self) -> None:
         return None
+
+    async def _latency(self, scale: float = 1.0) -> None:
+        self.request_count += 1
+        ms = get_settings().fixture_latency_ms
+        if ms:
+            await asyncio.sleep(ms * scale * random.uniform(0.6, 1.4) / 1000)
 
     def _ago(self, days: int | None) -> datetime | None:
         return None if days is None else self.now - timedelta(days=days)
@@ -67,7 +76,7 @@ class FixtureGitHubClient:
                 yield u, p
 
     async def search_merged_prs(self, criteria: Criteria) -> SearchResult:
-        self.request_count += 1
+        await self._latency(3)
         since = criteria.window_start(self.now)
         langs = {lang.lower() for lang in criteria.languages}
         kws = [k.lower() for k in criteria.keywords]
@@ -87,11 +96,11 @@ class FixtureGitHubClient:
         return SearchResult(hits=hits, queries=queries, total_count=len(hits))
 
     async def repo_contributors(self, repo: str, limit: int = 30) -> list[str]:
-        self.request_count += 1
+        await self._latency(1)
         return [c for c in self.world["contributors"].get(repo, []) if not c.endswith("[bot]")][:limit]
 
     async def get_candidate(self, login: str) -> CandidateData | None:
-        self.request_count += 1
+        await self._latency(2)
         u = self._users.get(login.lower())
         if not u:
             return None
@@ -128,7 +137,7 @@ class FixtureGitHubClient:
 
     async def get_pr_rest(self, repo: str, number: int) -> dict:
         """REST-shaped read that goes through a separate path from search/enrich (incl. overrides)."""
-        self.request_count += 1
+        await self._latency(1)
         override = self.world.get("rest_overrides", {}).get(f"{repo}#{number}")
         if override and override.get("status") == 404:
             raise NotFound(override.get("reason", "not found"))
