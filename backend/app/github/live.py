@@ -130,11 +130,17 @@ class LiveGitHubClient:
                 await asyncio.sleep(delay)
                 delay *= 2
                 continue
+            # GitHub's secondary limit can arrive with neither header; its docs say wait >= 60s.
+            secondary = r.status_code in (403, 429) and "secondary rate limit" in r.text.lower()
             if r.status_code in (403, 429) and (
-                r.headers.get("x-ratelimit-remaining") == "0" or "retry-after" in r.headers
+                r.headers.get("x-ratelimit-remaining") == "0" or "retry-after" in r.headers or secondary
             ):
+                if attempt == 4:
+                    return r
                 if "retry-after" in r.headers:
                     wait = float(r.headers["retry-after"])
+                elif secondary:
+                    wait = 60.0
                 else:
                     reset = int(r.headers.get("x-ratelimit-reset", "0"))
                     wait = max(1.0, reset - datetime.now(UTC).timestamp() + 1)

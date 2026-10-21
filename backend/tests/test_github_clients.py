@@ -97,3 +97,30 @@ async def test_live_client_etag_and_rate_limit(monkeypatch):
 
 async def _no_sleep(_):
     return None
+
+
+@respx.mock
+async def test_live_client_waits_out_secondary_rate_limit(monkeypatch):
+    from app.config import get_settings
+    from app.db import init_db
+    from app.github import live
+
+    await init_db()
+    monkeypatch.setattr(get_settings(), "github_token", "test-token")
+    waits: list[float] = []
+
+    async def on_wait(sec, reason):
+        waits.append(sec)
+
+    monkeypatch.setattr(live.asyncio, "sleep", _no_sleep)
+    respx.get("https://api.github.com/repos/o/r/pulls/2").mock(
+        side_effect=[
+            httpx.Response(403, json={"message": "You have exceeded a secondary rate limit."}),
+            httpx.Response(200, json={"merged_at": "2026-10-02T00:00:00Z"}),
+        ]
+    )
+    gh = live.LiveGitHubClient(on_wait=on_wait)
+    body = await gh.get_pr_rest("o/r", 2)
+    await gh.aclose()
+    assert body == {"merged_at": "2026-10-02T00:00:00Z"}
+    assert waits == [60.0]
