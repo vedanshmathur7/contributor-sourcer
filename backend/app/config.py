@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     # Agent limits
     search_rate_per_min: int = 28  # GitHub search API allows 30/min when authenticated
-    max_search_pages: int = 3
+    max_search_pages: int = 1  # 100 PRs per query is plenty for the enrichment budget; more pages trip secondary limits
     http_timeout_s: float = 20.0
     # Fixture mode simulates GitHub latency so the live trace is watchable in demos (0 in tests).
     fixture_latency_ms: int = 140

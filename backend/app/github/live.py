@@ -39,6 +39,7 @@ query($login: String!) {
 }
 """
 
+SEARCH_ENOUGH_AUTHORS = 80
 _search_limiter = RateLimiter(get_settings().search_rate_per_min, 60.0)
 CACHE_TTL = timedelta(minutes=15)
 
@@ -64,15 +65,16 @@ def _repo_from_gql(node: dict) -> RepoInfo:
 
 def build_search_queries(criteria: Criteria, since: datetime) -> list[str]:
     base = f"is:pr is:merged merged:>={since.date().isoformat()} -author:app/dependabot -author:app/renovate"
+    # Most specific first (seed repos, then keyword matches), the bare language query last as a fallback.
     queries: list[str] = []
-    langs = criteria.languages or [None]
-    for lang in langs[:3]:
-        q = base + (f' language:"{lang}"' if lang else "")
-        queries.append(q)
-        for kw in criteria.keywords[:2]:
-            queries.append(f'{q} "{kw}" in:title,body')
     if criteria.seed_repos:
         queries.append(base + " " + " ".join(f"repo:{r}" for r in criteria.seed_repos[:5]))
+    langs = criteria.languages or [None]
+    scoped = [base + (f' language:"{lang}"' if lang else "") for lang in langs[:3]]
+    for q in scoped:
+        for kw in criteria.keywords[:2]:
+            queries.append(f'{q} "{kw}" in:title,body')
+    queries.extend(scoped)
     return queries
 
 
@@ -196,6 +198,8 @@ class LiveGitHubClient:
         hits: list[SearchHit] = []
         total = 0
         for q in queries:
+            if len({h.login for h in hits}) >= SEARCH_ENOUGH_AUTHORS:
+                break  # enough authors for the enrichment budget; skip broader queries
             for page in range(1, get_settings().max_search_pages + 1):
                 await _search_limiter.acquire(self.on_wait)
                 body = await self._get_json(
