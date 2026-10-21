@@ -16,6 +16,24 @@ KEYWORDS = [
     "observability", "graphql", "streaming", "distributed", "runtime", "cli", "gpu", "data", "frontend", "devops",
 ]
 
+# Well-known projects: naming one makes it a keyword and seeds its real upstream repo.
+KNOWN_PROJECTS = {
+    "pandas": "pandas-dev/pandas", "polars": "pola-rs/polars", "numpy": "numpy/numpy", "pytorch": "pytorch/pytorch",
+    "tensorflow": "tensorflow/tensorflow", "scikit-learn": "scikit-learn/scikit-learn", "django": "django/django",
+    "fastapi": "fastapi/fastapi", "flask": "pallets/flask", "airflow": "apache/airflow", "spark": "apache/spark",
+    "kafka": "apache/kafka", "arrow": "apache/arrow", "duckdb": "duckdb/duckdb", "langchain": "langchain-ai/langchain",
+    "vllm": "vllm-project/vllm", "transformers": "huggingface/transformers", "tokio": "tokio-rs/tokio",
+    "axum": "tokio-rs/axum", "hyper": "hyperium/hyper", "quinn": "quinn-rs/quinn", "serde": "serde-rs/serde",
+    "bevy": "bevyengine/bevy", "tauri": "tauri-apps/tauri", "deno": "denoland/deno", "react": "facebook/react",
+    "nextjs": "vercel/next.js", "next.js": "vercel/next.js", "vue": "vuejs/core", "svelte": "sveltejs/svelte",
+    "angular": "angular/angular", "vite": "vitejs/vite", "kubernetes": "kubernetes/kubernetes",
+    "prometheus": "prometheus/prometheus", "grafana": "grafana/grafana", "terraform": "hashicorp/terraform",
+    "etcd": "etcd-io/etcd", "cockroachdb": "cockroachdb/cockroach", "postgres": "postgres/postgres",
+    "redis": "redis/redis", "rails": "rails/rails", "spring": "spring-projects/spring-boot", "flutter": "flutter/flutter",
+    "llvm": "llvm/llvm-project", "zig": "ziglang/zig",
+}
+GENERIC_KEYWORDS = {"data", "ml", "cli", "frontend", "devops", "security", "runtime"}
+
 PLAN_SCHEMA = {
     "type": "object",
     "properties": {
@@ -61,9 +79,14 @@ def heuristic_plan(query: str) -> tuple[Criteria, str]:
     for alias, lang in LANG_ALIASES.items():
         if re.search(rf"\b{re.escape(alias)}\b", low) and lang not in langs:
             langs.append(lang)
-    kws = [k for k in KEYWORDS if re.search(rf"\b{re.escape(k)}\b", low)][:3]
+    projects = [p for p in KNOWN_PROJECTS if re.search(rf"(?<![\w.-]){re.escape(p)}(?![\w-])", low)]
+    kws = [k for k in KEYWORDS if re.search(rf"\b{re.escape(k)}\b", low) and k not in projects]
+    if projects:  # a named project is a far better signal than a generic word like "data"
+        kws = [k for k in kws if k not in GENERIC_KEYWORDS]
+    kws = list(dict.fromkeys(projects + kws))[:3]
     repos = re.findall(r"\b([A-Za-z0-9][\w.-]*/[A-Za-z0-9][\w.-]+)\b", q)
     repos = [r for r in repos if "." not in r.split("/")[0] and not r.lower().startswith(("http", "www"))]
+    repos = list(dict.fromkeys(repos + [KNOWN_PROJECTS[p] for p in projects]))[:4]
     users = re.findall(r"(?<![\w/])@([A-Za-z0-9][\w-]{0,38}(?:\[bot\])?)", q)
 
     window = 180

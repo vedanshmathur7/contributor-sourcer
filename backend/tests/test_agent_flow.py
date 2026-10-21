@@ -23,6 +23,12 @@ def test_heuristic_planner():
     assert heuristic_plan("Go devs, India preferred")[0].location == "India"
 
 
+def test_heuristic_planner_named_projects_seed_real_repos():
+    c, _ = heuristic_plan("Python data engineers working on pandas or polars")
+    assert c.keywords == ["pandas", "polars"]  # the generic "data" is dropped
+    assert c.seed_repos == ["pandas-dev/pandas", "pola-rs/polars"]
+
+
 def test_ground_strips_unknown_urls():
     allowed = {"https://github.com/a/b/pull/1"}
     text, cites = ground("Great work (https://github.com/a/b/pull/1) and (https://evil.example/x).",
