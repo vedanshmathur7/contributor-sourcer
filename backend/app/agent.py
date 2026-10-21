@@ -33,6 +33,8 @@ log = logging.getLogger("agent")
 
 MAX_PASSES = 3
 ENRICH_CONCURRENCY = 5
+VERIFY_PER_CANDIDATE = 5  # plus every PR the summary cites
+SUMMARY_PRS = 12
 SECRET_HINTS = ("token", "key", "secret", "password", "authorization")
 
 _tasks: set[asyncio.Task] = set()
@@ -238,7 +240,7 @@ class Agent:
 
     async def _enrich_and_classify(self, pool: list[tuple[str, str]], pass_no: int) -> None:
         c = self.criteria
-        budget = max(10, min(60, c.max_candidates * 3)) - len(self.examined)
+        budget = max(10, min(40, c.max_candidates * 2)) - len(self.examined)
         selected, skipped = pool[: max(0, budget)], pool[max(0, budget):]
         if not selected:
             return
@@ -337,6 +339,13 @@ class Agent:
         self.cand_evidence[cand.id] = ev
         return cand
 
+    def _evidence_to_verify(self, cand: Candidate) -> list:
+        qualifying = [e for e in self.cand_evidence[cand.id] if e.qualifies]
+        cited = set(cand.summary_citations or [])
+        recent = sorted(qualifying, key=lambda e: e.merged_at, reverse=True)[:VERIFY_PER_CANDIDATE]
+        keep = {e.url for e in recent} | cited
+        return [e for e in qualifying if e.url in keep]
+
     async def _finish(self) -> None:
         c = self.criteria
         shortlisted = [x for x in self.candidates.values() if x.classification == "SHORTLISTED"]
@@ -352,14 +361,17 @@ class Agent:
             for x in sorted(shortlisted, key=lambda x: -x.score):
                 rec.decide(x.login, "SCORED", f"{x.score:.1f}/100")
 
-        if shortlisted:
-            async with self.step("Explain", "summarize_evidence", {"candidates": len(shortlisted)},
+        # Only the draft (top max_candidates) is explained and verified; the rest are over the cap.
+        draft = sorted(shortlisted, key=lambda x: -x.score)[: c.max_candidates]
+        if draft:
+            async with self.step("Explain", "summarize_evidence", {"candidates": len(draft)},
                                  rationale="LLM writes 'why this person' from evidence JSON only; uncited URLs are stripped.") as rec:
                 sem = asyncio.Semaphore(4)
                 sources: set[str] = set()
 
                 async def explain(cand: Candidate):
-                    ev = [e for e in self.cand_evidence[cand.id] if e.qualifies]
+                    ev = sorted((e for e in self.cand_evidence[cand.id] if e.qualifies),
+                                key=lambda e: e.merged_at, reverse=True)[:SUMMARY_PRS]
                     payload = {
                         "login": cand.login, "window_days": c.window_days, "target_stack": c.languages + c.keywords,
                         "qualifying_prs": [{"url": e.url, "title": e.title, "repo": e.repo, "repo_stars": e.repo_stars,
@@ -369,20 +381,21 @@ class Agent:
                     async with sem:
                         return cand, await summarize(payload)
 
-                for cand, (text, cites, src) in await asyncio.gather(*(explain(x) for x in shortlisted)):
+                for cand, (text, cites, src) in await asyncio.gather(*(explain(x) for x in draft)):
                     cand.summary, cand.summary_citations = text, cites
                     sources.add(src)
                     rec.decide(cand.login, "EXPLAINED", f"{len(cites)} citation(s) ({src})")
                 await self.db.commit()
-                rec.summary = f"Wrote {len(shortlisted)} grounded summaries via {', '.join(sorted(sources))}."
+                rec.summary = f"Wrote {len(draft)} grounded summaries via {', '.join(sorted(sources))}."
 
-        async with self.step("Verify", "verify_evidence", {"candidates": len(shortlisted)},
-                             rationale="Independent re-check: re-fetch every cited PR via REST and compare.") as rec:
-            items = [(e.url, x.login) for x in shortlisted for e in self.cand_evidence[x.id] if e.qualifies]
+        async with self.step("Verify", "verify_evidence", {"candidates": len(draft)},
+                             rationale="Independent re-check: re-fetch every cited PR (and the most recent ones) via REST and compare.") as rec:
+            to_check = {x.id: self._evidence_to_verify(x) for x in draft}
+            items = [(e.url, x.login) for x in draft for e in to_check[x.id]]
             results, at = await verify_many(self.gh, items, c.window_start(self.now))
             n_ok = 0
-            for x in shortlisted:
-                rows = [e for e in self.cand_evidence[x.id] if e.qualifies]
+            for x in draft:
+                rows = to_check[x.id]
                 failed = []
                 for e in rows:
                     r = results[e.url]
@@ -399,7 +412,7 @@ class Agent:
                     rec.decide(x.login, "VERIFIED", f"All {len(rows)} cited PR(s) re-verified.")
                 self.publish({"type": "candidate", "candidate": candidate_dict(x, self.cand_evidence[x.id])})
             await self.db.commit()
-            rec.summary = f"{n_ok}/{len(items)} cited PRs re-verified; {sum(x.blocked for x in shortlisted)} candidate(s) blocked for review."
+            rec.summary = f"{n_ok}/{len(items)} cited PRs re-verified; {sum(x.blocked for x in draft)} candidate(s) blocked for review."
 
         async with self.step("Propose", "propose_shortlist", {"max_candidates": c.max_candidates},
                              rationale="Draft only — nothing is final until a human approves.") as rec:
