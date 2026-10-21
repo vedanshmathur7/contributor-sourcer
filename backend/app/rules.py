@@ -16,6 +16,9 @@ from enum import StrEnum
 from app.schemas import CandidateData, Criteria, PullRequest, RepoInfo, now_utc
 
 BOT_MARKERS = ("[bot]", "dependabot", "renovate", "github-actions", "-ci-bot", "greenkeeper", "snyk-bot")
+# Well-known automation accounts registered as ordinary users (no "[bot]" suffix).
+KNOWN_BOT_USERS = {"meeseeksmachine", "pre-commit-ci", "allcontributors", "codecov-commenter", "imgbot",
+                   "mergify", "kodiakhq", "web-flow", "bors", "homu", "k8s-ci-robot", "copybara-service"}
 
 
 class Classification(StrEnum):
@@ -65,7 +68,7 @@ def is_bot(login: str, account_type: str = "User") -> bool:
     if account_type == "Bot":
         return True
     low = login.lower()
-    return any(m in low for m in BOT_MARKERS)
+    return low in KNOWN_BOT_USERS or any(m in low for m in BOT_MARKERS)
 
 
 def stack_matches(repo: RepoInfo, criteria: Criteria) -> bool:

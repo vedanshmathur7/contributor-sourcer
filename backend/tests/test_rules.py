@@ -75,6 +75,7 @@ def test_rule_stack_keywords_when_no_language():
 def test_rule_bot_detection():
     assert is_bot("dependabot[bot]") and is_bot("renovate") and is_bot("anything", "Bot")
     assert not is_bot("robert")
+    assert is_bot("meeseeksmachine") and is_bot("k8s-ci-robot")  # automation registered as a User
 
 
 # ---------- classifications ----------
