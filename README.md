@@ -4,7 +4,7 @@
 
 Built for the **Ziro Agentic AI Hackathon 2026** (Developer & Enterprise AI track).
 
-**Live demo:** https://contributor-sourcer.onrender.com · API https://contributor-sourcer-api.onrender.com/docs · [Official test cases](https://contributor-sourcer.onrender.com/tests)
+**Live demo:** https://contributor-sourcer.onrender.com · API https://contributor-sourcer-api.onrender.com/docs · [Official test cases](https://contributor-sourcer.onrender.com/tests) · [Deck](https://contributor-sourcer.onrender.com/deck) · [Demo video](https://contributor-sourcer.onrender.com/demo)
 
 > These run on the free hosting tier. If the site has been idle, the first load can take about 30 seconds while the API wakes up. The header shows *"Waking API…"* and retries automatically.
 

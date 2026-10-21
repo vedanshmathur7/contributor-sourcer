@@ -9,7 +9,8 @@
 | Test cases (live page) | https://contributor-sourcer.onrender.com/tests |
 | Test cases (document) | `docs/TEST_CASES.md` in the repo |
 | Demo script | `docs/DEMO_SCRIPT.md` |
-| Presentation outline | `docs/PRESENTATION.md` (10 slides) |
+| Presentation | https://contributor-sourcer.onrender.com/deck (10 slides, ← → keys) |
+| Demo video (2:07) | https://contributor-sourcer.onrender.com/demo (MP4: /demo.mp4) |
 
 ## Before you submit
 1. **Add the secrets in Render** (Dashboard → `contributor-sourcer-api` → Environment), then save. The service redeploys automatically.

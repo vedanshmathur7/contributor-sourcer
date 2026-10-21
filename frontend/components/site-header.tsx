@@ -17,6 +17,8 @@ const NAV = [
   { href: "/tests", label: "Test cases" },
   { href: "/audit", label: "Audit log" },
   { href: "/about", label: "How it works" },
+  { href: "/deck", label: "Deck" },
+  { href: "/demo", label: "Demo" },
 ];
 
 export function SiteHeader() {
