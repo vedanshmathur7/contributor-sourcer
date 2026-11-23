@@ -2,9 +2,7 @@
 
 > An AI agent that finds developers with **real, recent public contributions** in a technology. It returns a shortlist where every claim links to its evidence, every cited PR is **independently re-verified**, and nothing is final until a **human approves** it.
 
-Built for the **Ziro Agentic AI Hackathon 2026** (Developer & Enterprise AI track).
-
-**Live demo:** https://contributor-sourcer.onrender.com · API https://contributor-sourcer-api.onrender.com/docs · [Official test cases](https://contributor-sourcer.onrender.com/tests) · [Deck](https://contributor-sourcer.onrender.com/deck) · [Demo video](https://contributor-sourcer.onrender.com/demo)
+**Live demo:** https://contributor-sourcer.onrender.com · API https://contributor-sourcer-api.onrender.com/docs · [Test scenarios](https://contributor-sourcer.onrender.com/tests) · [Demo video](https://contributor-sourcer.onrender.com/demo)
 
 > These run on the free hosting tier. If the site has been idle, the first load can take about 30 seconds while the API wakes up. The header shows *"Waking API…"* and retries automatically.
 
@@ -18,7 +16,7 @@ Recruiters source developers from profiles, keywords and follower counts. These 
 
 ## What it does
 
-| Brief requirement | How it is implemented |
+| Capability | How it is implemented |
 |---|---|
 | Collect details: skills and recency | A natural-language request goes to the **LLM planner**, which produces editable structured criteria (languages, keywords, seed repos, profiles to vet, window, minimum PRs, location preference). |
 | Plan: judge public contributions only | `rules.py` contains **deterministic** decision rules. The LLM never decides who qualifies. |
@@ -48,24 +46,24 @@ flowchart LR
 
 Every node is a recorded tool call. Each record holds the inputs, duration, summary, rationale ("why") and per-candidate decisions. Records are persisted and streamed live over **Server-Sent Events** to the trace panel.
 
-**Adaptive discovery, with guardrails.** After each pass, the strategist (the LLM, with a deterministic fallback) decides whether to look further. It can add seed repositories taken *from the evidence*, or drop the keyword filters. It **cannot** change the recency window, minimum PRs, stack or any rule. In other words, the agent can widen *where it looks* but never *what counts*. In the default fixture run, this step is how the agent finds the three-year-stale TC3 developer and correctly excludes them.
+**Adaptive discovery, with guardrails.** After each pass, the strategist (the LLM, with a deterministic fallback) decides whether to look further. It can add seed repositories taken *from the evidence*, or drop the keyword filters. It **cannot** change the recency window, minimum PRs, stack or any rule. In other words, the agent can widen *where it looks* but never *what counts*. In the default fixture run, this step is how the agent finds the three-year-stale S3 developer and correctly excludes them.
 
-## Decision rules and the TC1–TC4 mapping
+## Decision rules and test scenarios
 
 A merged PR is a **qualifying contribution** only if every check passes:
 
-| Check | Meaning | Test case |
+| Check | Meaning | Scenario |
 |---|---|---|
-| `merged` | The PR was merged | TC1 |
-| `in_window` | Merged inside the recency window | **TC3**: the agent excludes and states the date ("latest qualifying PR 2023-10-09, 1104 days ago, outside the 180-day window") |
-| `base_not_fork` | The base repository is not a fork. A PR *from* your fork *into* a real upstream counts. Work that only lives in your fork does not. | **TC2** |
+| `merged` | The PR was merged | S1 |
+| `in_window` | Merged inside the recency window | **S3**: the agent excludes and states the date ("latest qualifying PR 2023-10-09, 1104 days ago, outside the 180-day window") |
+| `base_not_fork` | The base repository is not a fork. A PR *from* your fork *into* a real upstream counts. Work that only lives in your fork does not. | **S2** |
 | `not_own_repo` | Not self-merged into your own repo. Own projects are a small bonus, never sufficient alone. | n/a |
 | `stack_match` | The upstream's primary language matches the target stack | n/a |
 | not a bot | dependabot, renovate and `[bot]` accounts are excluded | n/a |
 
 Classifications: `SHORTLISTED`, `EXCLUDED_RECENCY`, `EXCLUDED_FORK_ONLY`, `EXCLUDED_STACK`, `EXCLUDED_BOT`, `INSUFFICIENT_EVIDENCE` (with `BELOW_MIN_PRS`, `OWN_PROJECTS_ONLY`, `NO_PUBLIC_CONTRIBUTIONS`, `FETCH_FAILED`). Each one carries a machine-readable reason code and a human sentence.
 
-**Contact rule (TC4):** `contact_email` is the profile's public `email` field, or `null`. It is never derived from commit metadata, never pattern-guessed, and never inferred by an LLM. The UI shows **"Not public"** with an explanation. Unit tests assert this even when name, company and domain are available.
+**Contact rule (S4):** `contact_email` is the profile's public `email` field, or `null`. It is never derived from commit metadata, never pattern-guessed, and never inferred by an LLM. The UI shows **"Not public"** with an explanation. Unit tests assert this even when name, company and domain are available.
 
 **Evidence score (0–100, deterministic):** volume 35, recency (half-life decay) 25, repository significance (log stars) 20, diversity of repos 10, PR-size sanity 5, own-project bonus 5. The breakdown is shown for every candidate.
 
@@ -99,7 +97,7 @@ flowchart TB
 ```
 backend/   FastAPI app, agent, rules, verifier, GitHub clients, fixtures, tests (54)
 frontend/  Next.js UI: search, plan review, live trace, drawer, approval, exports, tests, audit, about
-docs/      TEST_CASES.md (generated), DEMO_SCRIPT.md, PRESENTATION.md
+docs/      TEST_CASES.md (generated), DEMO_SCRIPT.md
 ```
 
 ## Run it locally
@@ -138,7 +136,7 @@ To run with Docker and Postgres: `docker compose up --build`. The API runs on `:
 
 ```bash
 cd backend
-uv run pytest -q          # 54 tests: every rule, contact rule, scoring, clients, full agent loop, approval gate, TC1–TC4 harness
+uv run pytest -q          # 54 tests: every rule, contact rule, scoring, clients, full agent loop, approval gate, S1–S4 harness
 uv run ruff check .
 uv run python scripts/export_testcases.py          # regenerate docs/TEST_CASES.md (fixture)
 uv run python scripts/export_testcases.py --live   # same, live GitHub (needs token + logins in app/live_testcases.json)
@@ -160,11 +158,11 @@ To redeploy your own copy, go to Render → **New → Blueprint**, pick this rep
 - `LLM_API_KEY`: an Anthropic key. It enables the LLM planner, adaptation and summaries.
 - `DATABASE_URL`: the Supabase *Transaction pooler* URL. This gives durable storage; without it, the API uses SQLite inside the container, and that data is reset whenever the service restarts.
 
-Every push to `main` redeploys both services. CI runs lint, typecheck and tests. `.github/workflows/keepalive.yml` pings both services every 14 minutes during the event, so the free tier doesn't sleep.
+Every push to `main` redeploys both services. CI runs lint, typecheck and tests. `.github/workflows/keepalive.yml` pings both services every 14 minutes so the free tier doesn't sleep.
 
 **Vercel alternative:** the backend also runs serverless (`backend/index.py` and `backend/vercel.json`). On Vercel (`VERCEL=1`, or set `RUN_INLINE=1`), the agent executes inside the SSE request, because serverless kills background tasks. Runs are claimed atomically, so a run never executes twice. Use Postgres with this option.
 
-Smoke test: open `/tests`, click **Run TC1–TC4** in Fixture mode, and expect 4 of 4 to pass. This has been verified on the live deployment.
+Smoke test: open `/tests`, click **Run S1–S4** in Fixture mode, and expect 4 of 4 to pass. This has been verified on the live deployment.
 
 ## Privacy and safety
 
