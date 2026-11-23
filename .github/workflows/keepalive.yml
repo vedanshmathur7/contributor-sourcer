@@ -1,7 +1,7 @@
 name: Keep demo awake
 
-# Render's free tier sleeps after ~15 idle minutes. During the hackathon (18–31 Oct 2026),
-# ping both services every 14 minutes from 08:00 to 23:59 IST so judges never hit a cold start.
+# Render's free tier sleeps after ~15 idle minutes. During the scheduled window,
+# ping both services every 14 minutes from 08:00 to 23:59 IST so visitors never hit a cold start.
 on:
   schedule:
     - cron: "*/14 2-18 18-31 10 *"
