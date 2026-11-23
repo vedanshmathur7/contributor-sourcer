@@ -76,8 +76,6 @@ const SLIDES: { title: string; body: React.ReactNode }[] = [
           independent verification, and a human approval gate.
         </p>
         <div className="mt-10 flex flex-wrap gap-3 text-sm text-muted-foreground">
-          <span className="rounded-full border px-3 py-1">Ziro Agentic AI Hackathon 2026</span>
-          <span className="rounded-full border px-3 py-1">Developer & Enterprise AI</span>
           <span className="rounded-full border px-3 py-1">Vedansh Mathur · solo</span>
         </div>
       </div>
@@ -233,7 +231,7 @@ const SLIDES: { title: string; body: React.ReactNode }[] = [
     title: "Test cases",
     body: (
       <>
-        <Kicker n={8}>Official test cases</Kicker>
+        <Kicker n={8}>Test scenarios</Kicker>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           {[
             ["TC1", "Recent merged PRs in stack", "SHORTLISTED · 3 PR links · 3/3 re-verified"],
